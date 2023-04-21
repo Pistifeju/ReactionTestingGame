@@ -9,4 +9,6 @@
     <string name="username">Username</string>
     <string name="passwordConfirm">Password again</string>
     <string name="registerText">Register</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="logout">Logout</string>
 </resources>
