@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_leaderboard) {
-            // Handle leaderboard action
+            showLeaderboard();
             return true;
         } else if (id == R.id.action_logout) {
             FirebaseAuth.getInstance().signOut();
@@ -84,4 +84,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void showLeaderboard() {
+        Intent intent = new Intent(MainActivity.this, LeaderboardActivity.class);
+        startActivity(intent);
+    }
 }

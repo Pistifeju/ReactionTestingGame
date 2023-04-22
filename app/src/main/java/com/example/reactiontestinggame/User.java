@@ -15,6 +15,9 @@ public class User implements Serializable {
         this.gameRecord = 0;
     }
 
+    public User(String username, float gameRecord, double lastThreeGamesAvg) {
+    }
+
     public String getUsername() {
         return username;
     }

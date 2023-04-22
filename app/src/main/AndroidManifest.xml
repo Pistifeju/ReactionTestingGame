@@ -14,9 +14,12 @@
         android:theme="@style/Theme.ReactionTestingGame"
         tools:targetApi="33">
         <activity
-            android:name=".GameActivity"
-            android:windowSoftInputMode="stateAlwaysVisible"
+            android:name=".LeaderboardActivity"
             android:exported="false" />
+        <activity
+            android:name=".GameActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />

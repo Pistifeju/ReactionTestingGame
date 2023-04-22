@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -39,6 +41,8 @@ public class GameActivity extends AppCompatActivity {
     private long startTime;
     private EditText inputEditText;
 
+    private boolean isPaused = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +53,21 @@ public class GameActivity extends AppCompatActivity {
         showKeyboard();
         addKeyboardListener();
         keepKeyboardVisible();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isPaused = true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isPaused) {
+            startTime += System.currentTimeMillis() - startTime;
+            isPaused = false;
+        }
     }
 
     private void initGame() {
@@ -70,6 +89,9 @@ public class GameActivity extends AppCompatActivity {
             TextView targetCharacterTextView = findViewById(R.id.targetCharacterTextView);
             targetCharacterTextView.setText(String.valueOf(targetCharacters[targetCharacterIndex]));
             startTime = System.currentTimeMillis();
+
+            Animation scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.scale_animation);
+            targetCharacterTextView.startAnimation(scaleAnimation);
         } else {
             showResult();
         }
@@ -196,7 +218,7 @@ public class GameActivity extends AppCompatActivity {
             Map<String, Object> updates = new HashMap<>();
             updates.put("games", FieldValue.arrayUnion(averageReactionTime));
 
-            if (averageReactionTime < user.getGameRecord()) {
+            if (averageReactionTime < user.getGameRecord() || user.getGameRecord() == 0) {
                 updates.put("gameRecord", averageReactionTime);
                 user.setGameRecord((float) averageReactionTime);
             }
@@ -212,6 +234,4 @@ public class GameActivity extends AppCompatActivity {
             Toast.makeText(GameActivity.this, "Unexpected error happened.", Toast.LENGTH_SHORT).show();
         }
     }
-
-
 }
