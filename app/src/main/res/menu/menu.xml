@@ -8,4 +8,9 @@
         android:id="@+id/action_logout"
         android:title="@string/logout"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/delete_account"
+        android:title="@string/delete_account"
+        app:showAsAction="ifRoom" />
 </menu>
