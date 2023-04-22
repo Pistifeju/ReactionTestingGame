@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("");
         setSupportActionBar(toolbar);
         toolbar.showOverflowMenu();
 
@@ -34,22 +34,23 @@ public class MainActivity extends AppCompatActivity {
         if (firebaseUser == null) {
             logout();
         } else {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            String userId = firebaseUser.getUid();
-            DocumentReference userRef = db.collection("users").document(userId);
+            if (user == null) {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                String userId = firebaseUser.getUid();
+                DocumentReference userRef = db.collection("users").document(userId);
 
-            userRef.get().addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    user = documentSnapshot.toObject(User.class);
-                    assert user != null;
-                    toolbar.setTitle(user.getUsername());
-                } else {
+                userRef.get().addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        user = documentSnapshot.toObject(User.class);
+                        assert user != null;
+                        toolbar.setTitle(user.getUsername());
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error happened while fetching your account.", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(e -> {
                     Toast.makeText(MainActivity.this, "Error happened while fetching your account.", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(e -> {
-                Toast.makeText(MainActivity.this, "Error happened while fetching your account.", Toast.LENGTH_SHORT).show();
-            });
-
+                });
+            }
         }
     }
 
@@ -76,4 +77,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }
+
+    public void startGame(View view) {
+        startActivity(new Intent(MainActivity.this, GameActivity.class));
+    }
+
 }
