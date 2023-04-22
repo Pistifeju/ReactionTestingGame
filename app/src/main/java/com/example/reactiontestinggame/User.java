@@ -1,7 +1,8 @@
 package com.example.reactiontestinggame;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class User {
+public class User implements Serializable {
     private String username;
     private ArrayList<Float> games;
     private float gameRecord;

@@ -1,7 +1,5 @@
 package com.example.reactiontestinggame;
 
-import static android.content.ContentValues.TAG;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -9,29 +7,32 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class GameActivity extends AppCompatActivity {
 
+    private User user;
     private int targetCharacterIndex = 0;
     private char[] targetCharacters;
     private long[] reactionTimes;
@@ -42,6 +43,7 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        user = (User) getIntent().getSerializableExtra("user");
         startGradientAnimation();
         initGame();
         showKeyboard();
@@ -91,16 +93,24 @@ public class GameActivity extends AppCompatActivity {
 
         // Create an AlertDialog to show the result
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        double finalAverageReactionTime = averageReactionTime;
+        double finalAverageReactionTime1 = averageReactionTime;
+
         builder.setTitle("Game Over")
                 .setMessage("Your average reaction time is: " + formattedReactionTime + " ms")
                 .setPositiveButton("Restart", (dialog, id) -> {
-                    targetCharacterIndex = 0;
-                    initGame();
-                    dialog.dismiss();
+                    saveGameResultToFirebase(finalAverageReactionTime1, () -> {
+                        targetCharacterIndex = 0;
+                        initGame();
+                        dialog.dismiss();
+                    });
                 })
                 .setNegativeButton("Main Menu", (dialog, id) -> {
-                    finish();
-                    dialog.dismiss();
+                    saveGameResultToFirebase(finalAverageReactionTime, () -> {
+                        finish();
+                        dialog.dismiss();
+                    });
                 });
 
         AlertDialog alertDialog = builder.create();
@@ -154,8 +164,6 @@ public class GameActivity extends AppCompatActivity {
         });
     }
 
-
-
     private void startGradientAnimation() {
         final ArgbEvaluator evaluator = new ArgbEvaluator();
         final int startColor = Color.parseColor("#FF0000");
@@ -163,7 +171,7 @@ public class GameActivity extends AppCompatActivity {
         final ConstraintLayout constraintLayout = findViewById(R.id.constraintLayout);
 
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
-        valueAnimator.setDuration(5000);
+        valueAnimator.setDuration(1000);
         valueAnimator.setRepeatCount(ValueAnimator.INFINITE);
         valueAnimator.setRepeatMode(ValueAnimator.REVERSE);
         valueAnimator.addUpdateListener(animation -> {
@@ -177,4 +185,33 @@ public class GameActivity extends AppCompatActivity {
 
         valueAnimator.start();
     }
+
+    private void saveGameResultToFirebase(double averageReactionTime, Runnable onSuccess) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            assert firebaseUser != null;
+            DocumentReference userRef = db.collection("users").document(firebaseUser.getUid());
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("games", FieldValue.arrayUnion(averageReactionTime));
+
+            if (averageReactionTime < user.getGameRecord()) {
+                updates.put("gameRecord", averageReactionTime);
+                user.setGameRecord((float) averageReactionTime);
+            }
+
+            userRef.update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        onSuccess.run();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(GameActivity.this, "Error saving game result.", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(GameActivity.this, "Unexpected error happened.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 }
