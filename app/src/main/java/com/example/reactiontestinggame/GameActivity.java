@@ -6,7 +6,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
@@ -26,11 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.reactiontestinggame.services.GameService;
+import com.google.android.gms.tasks.OnFailureListener;
 
 public class GameActivity extends AppCompatActivity {
 
@@ -122,14 +121,20 @@ public class GameActivity extends AppCompatActivity {
         builder.setTitle("Game Over")
                 .setMessage("Your average reaction time is: " + formattedReactionTime + " ms")
                 .setPositiveButton("Restart", (dialog, id) -> {
-                    saveGameResultToFirebase(finalAverageReactionTime1, () -> {
+                    saveGameResultToFirebase(finalAverageReactionTime, () -> {
                         targetCharacterIndex = 0;
                         initGame();
+                        dialog.dismiss();
+                    }, e -> {
+                        finish();
                         dialog.dismiss();
                     });
                 })
                 .setNegativeButton("Main Menu", (dialog, id) -> {
                     saveGameResultToFirebase(finalAverageReactionTime, () -> {
+                        finish();
+                        dialog.dismiss();
+                    }, e -> {
                         finish();
                         dialog.dismiss();
                     });
@@ -138,7 +143,6 @@ public class GameActivity extends AppCompatActivity {
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-
 
     private void showKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -208,30 +212,14 @@ public class GameActivity extends AppCompatActivity {
         valueAnimator.start();
     }
 
-    private void saveGameResultToFirebase(double averageReactionTime, Runnable onSuccess) {
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            assert firebaseUser != null;
-            DocumentReference userRef = db.collection("users").document(firebaseUser.getUid());
-
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("games", FieldValue.arrayUnion(averageReactionTime));
-
-            if (averageReactionTime < user.getGameRecord() || user.getGameRecord() == 0) {
-                updates.put("gameRecord", averageReactionTime);
-                user.setGameRecord((float) averageReactionTime);
-            }
-
-            userRef.update(updates)
-                    .addOnSuccessListener(aVoid -> {
-                        onSuccess.run();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(GameActivity.this, "Error saving game result.", Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            Toast.makeText(GameActivity.this, "Unexpected error happened.", Toast.LENGTH_SHORT).show();
-        }
+    private void saveGameResultToFirebase(double averageReactionTime, Runnable onSuccess,  OnFailureListener onFailureListener) {
+        GameService gameService = new GameService();
+        gameService.saveGameResult(averageReactionTime, user, () -> {
+            Toast.makeText(GameActivity.this, "Game result saved successfully.", Toast.LENGTH_SHORT).show();
+            onSuccess.run();
+        }, e -> {
+            Toast.makeText(GameActivity.this, "Error saving game result.", Toast.LENGTH_SHORT).show();
+            onFailureListener.onFailure(e);
+        });
     }
 }

@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.reactiontestinggame.services.LeaderboardService;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -43,26 +44,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void fetchUsers() {
-        users.clear();
-        firebaseFirestore.collection("users")
-                .orderBy("gameRecord", Query.Direction.ASCENDING)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        List<User> usersWithZeroGameRecord = new ArrayList<>();
-                        for (DocumentSnapshot document : task.getResult()) {
-                            User user = document.toObject(User.class);
-                            assert user != null;
-                            if (user.getGameRecord() == 0) {
-                                usersWithZeroGameRecord.add(user);
-                            } else {
-                                users.add(user);
-                            }
-                        }
-                        users.addAll(usersWithZeroGameRecord);
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+        LeaderboardService leaderboardService = new LeaderboardService();
+        leaderboardService.fetchUsers(users, firebaseFirestore, adapter);
     }
-
 }

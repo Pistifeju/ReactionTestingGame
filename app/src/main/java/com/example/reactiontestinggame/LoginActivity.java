@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.reactiontestinggame.services.UserService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -28,14 +29,16 @@ public class LoginActivity extends AppCompatActivity {
     public void login(View view) {
         String email = emailEditText.getText().toString();
         String password = passwordEditText.getText().toString();
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
+        UserService userService = new UserService();
+
+        userService.signIn(email, password, task -> {
             if (task.isSuccessful()) {
-                Toast.makeText(LoginActivity.this, "Login successful.", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                Toast.makeText(this, "Login successful.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
                 finish();
             } else {
-                Toast.makeText(LoginActivity.this, "Login failed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Login failed.", Toast.LENGTH_SHORT).show();
             }
         });
     }

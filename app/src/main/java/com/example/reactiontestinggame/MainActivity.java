@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.reactiontestinggame.services.UserService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -94,32 +95,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteUserAccount() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-
-            db.collection("users").document(userId)
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        currentUser.delete()
-                                .addOnSuccessListener(aVoid1 -> {
-                                    Toast.makeText(MainActivity.this, "User account deleted successfully.", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(MainActivity.this, "Failed to delete user account.", Toast.LENGTH_SHORT).show();
-                                });
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(MainActivity.this, "Failed to delete user data.", Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            Toast.makeText(MainActivity.this, "No user is currently signed in.", Toast.LENGTH_SHORT).show();
-        }
+        UserService userService = new UserService();
+        userService.deleteUserAccount(MainActivity.this);
     }
 
     private void showDeleteAccountDialog() {
