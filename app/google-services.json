@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "48781230190",
+    "project_id": "reactiontestinggame",
+    "storage_bucket": "reactiontestinggame.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48781230190:android:a75394ac64efef6c52a67f",
+        "android_client_info": {
+          "package_name": "com.example.reactiontestinggame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "48781230190-iho65tuspmnml3q9f75ci3010poepl95.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.reactiontestinggame",
+            "certificate_hash": "b1637a93a1615af755beeae5f6179d63fcb50ae4"
+          }
+        },
+        {
+          "client_id": "48781230190-sc2ud4bjigob774bghiu34l6v9u569n0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzjtdZGOK7VE0T_WVdRVE3dZQcR4IRO0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "48781230190-sc2ud4bjigob774bghiu34l6v9u569n0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
